@@ -12,6 +12,8 @@ import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
     
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     var todoItems : Results<Item>?
     let realm = try! Realm()
     
@@ -24,12 +26,42 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
         tableView.separatorStyle = .none
         
-        
     }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        title = selectedCategory?.name
+        
+        guard let colourHex = selectedCategory?.colour else { fatalError() }
+        
+        updateNavBar(withHexCode: colourHex)
+            }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "1D9BF6")
+    }
+    
+    //MARK: - Nav Bar Setup Methods
+    
+    func updateNavBar(withHexCode colourHexCode: String) {
+       
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation Controller doesn't exist")}
+        
+        guard let navBarColour = UIColor(hexString: colourHexCode) else { fatalError() }
+        
+        navBar.barTintColor = navBarColour
+        
+        navBar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+        
+        navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : ContrastColorOf(navBarColour, returnFlat: true)]
+        
+        searchBar.barTintColor = navBarColour
+
+    }
+
     
     //MARK: - Tableview Datasource Methods
     
@@ -80,13 +112,6 @@ class TodoListViewController: SwipeTableViewController {
         
         tableView.reloadData()
         
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
-        
-//        todoItems[indexPath.row].done = !todoItems[indexPath.row].done
-//
-//        saveItems()
-        
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
@@ -134,6 +159,7 @@ class TodoListViewController: SwipeTableViewController {
         
     }
     
+    
     //MARK - Model Manupulation Methods
     
     func loadItems() {
@@ -156,6 +182,7 @@ class TodoListViewController: SwipeTableViewController {
     }
 }
 }
+
 
 //MARK: - Search bar methods
 extension TodoListViewController: UISearchBarDelegate {
